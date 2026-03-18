@@ -11,8 +11,6 @@ const CAM_LABELS = {
   '6B':'YOU',
   '7A':'RIGHT DOOR',
 };
-const LEFT_CHAIN  = ['5A','4A','2A','1A'];
-const RIGHT_CHAIN = ['5A','4A','2A','1B'];
 
 function camSvgTemplate(title, scene){
   return `
@@ -60,87 +58,13 @@ function setLightVisual(side,on){
   if(ov) ov.classList.toggle('on',!!on);
 }
 
-function updateEpsilonVisual(){
-  const elL=document.getElementById('epsilon-left');
-  const elR=document.getElementById('epsilon-right');
-  if(elL) elL.style.display=(state.epsilonAtDoor==='left' && state.lightLeft)?'block':'none';
-  if(elR) elR.style.display=(state.epsilonAtDoor==='right' && state.lightRight)?'block':'none';
-
-  checkEpsteinOnCurrentCam();
-}
-
-function showEpsteinOnCam(){
-  const el=document.getElementById('epstein-on-cam');
-  if(el) el.style.display='flex';
-}
-function hideEpsteinOnCam(){
-  const el=document.getElementById('epstein-on-cam');
-  if(el) el.style.display='none';
-}
-
-function checkEpsteinOnCurrentCam(){
-  if(!isCamPanelOpen()){
-    hideEpsteinOnCam();
-    return;
-  }
-  const epCam = state.epsilonAtDoor==='left' ? '6A' : (state.epsilonAtDoor==='right' ? '7A' : null);
-  const onCam = (epCam && state.currentCam===epCam);
-  if(onCam) showEpsteinOnCam(); else hideEpsteinOnCam();
-}
-
 function toggleLight(side){
   if(!state.running||state.gameOver||state.power<=0) return;
   AUDIO.sfxLight();
   if(side==='left') state.lightLeft=!state.lightLeft;
   else state.lightRight=!state.lightRight;
   setLightVisual(side,side==='left'?state.lightLeft:state.lightRight);
-
-  if(state.epsilonAtDoor===side && (side==='left'?state.lightLeft:state.lightRight) && state.epsilonFleeSeconds<=0){
-    showAlert('⚠ YOU FLASHED EPSTEIN — HE RAN ⚠');
-    state.epsilonFleeSeconds=1;
-    updateEpsilonVisual();
-  } else {
-    updateEpsilonVisual();
-  }
-}
-
-function handleEpsilon(){
-  if(state.gameOver || !state.running) return;
-
-  if(state.epsilonFleeSeconds>0){
-    state.epsilonFleeSeconds--;
-    updateEpsilonVisual();
-    if(state.epsilonFleeSeconds===0){
-      state.epsilonAtDoor=null;
-      state.epsilonDoorSeconds=0;
-      state.epsilonCooldownSeconds=randInt(6,12);
-      updateEpsilonVisual();
-    }
-    return;
-  }
-
-  if(state.epsilonCooldownSeconds>0){
-    state.epsilonCooldownSeconds--;
-  }
-
-  if(!state.epsilonAtDoor){
-    if(state.epsilonCooldownSeconds<=0 && chance(0.06 + (state.night-1)*0.01)){
-      state.epsilonAtDoor=(Math.random()<0.5)?'left':'right';
-      state.epsilonDoorSeconds=0;
-      state.epsilonScareLimitSeconds=randInt(5,9);
-      state.epsilonFleeSeconds=0;
-      showAlert(state.epsilonAtDoor==='left'?'⚠ EPSTEIN AT THE LEFT DOOR ⚠':'⚠ EPSTEIN AT THE RIGHT DOOR ⚠');
-      updateEpsilonVisual();
-    }
-    return;
-  }
-
-  state.epsilonDoorSeconds++;
-  updateEpsilonVisual();
-
-  if(state.epsilonDoorSeconds>=state.epsilonScareLimitSeconds){
-    triggerJumpscare();
-  }
+  updateShadowOfficeVisual();
 }
 
 const CAM_SCENES = {
@@ -302,33 +226,37 @@ const CAM_SCENES = {
       <line x1="18" y1="126" x2="88" y2="126" stroke="#071307" stroke-width="1" opacity="0.16"/>
     </g>
   `),
-  '6A': () => camSvgTemplate('GYM', `
-    <rect x="10" y="20" width="220" height="82" fill="#030707" stroke="#081408" stroke-width="1" opacity="0.6"/>
-    <rect x="16" y="26" width="208" height="72" fill="#020404" stroke="#0a1a0a" stroke-width="1" opacity="0.75"/>
+  '6A': () => camSvgTemplate('LEFT DOOR', `
+    <rect x="10" y="18" width="220" height="90" fill="#030606" stroke="#081408" stroke-width="1" opacity="0.75"/>
 
-    <g opacity="0.85">
-      <line x1="22" y1="36" x2="218" y2="36" stroke="#071307" stroke-width="1" opacity="0.32"/>
-      <line x1="22" y1="50" x2="218" y2="50" stroke="#071307" stroke-width="1" opacity="0.22"/>
-      <line x1="22" y1="64" x2="218" y2="64" stroke="#071307" stroke-width="1" opacity="0.18"/>
-      <line x1="22" y1="78" x2="218" y2="78" stroke="#071307" stroke-width="1" opacity="0.14"/>
-      <line x1="120" y1="26" x2="120" y2="98" stroke="#071307" stroke-width="1" opacity="0.16"/>
-    </g>
+    <rect x="14" y="22" width="124" height="78" fill="#020404" opacity="0.95"/>
+    <rect x="138" y="22" width="88" height="78" fill="#010101" opacity="0.98"/>
 
-    <g opacity="0.9">
-      <circle cx="72" cy="62" r="14" fill="none" stroke="#0a1a0a" stroke-width="2" opacity="0.75"/>
-      <circle cx="168" cy="62" r="14" fill="none" stroke="#0a1a0a" stroke-width="2" opacity="0.75"/>
-      <rect x="112" y="30" width="16" height="64" fill="#001800" opacity="0.14"/>
-      <rect x="30" y="30" width="18" height="12" fill="#020404" stroke="#0a1a0a" stroke-width="1"/>
-      <rect x="192" y="30" width="18" height="12" fill="#020404" stroke="#0a1a0a" stroke-width="1"/>
-      <path d="M30 36 Q39 30 48 36" stroke="#0a1a0a" stroke-width="2" fill="none" opacity="0.75"/>
-      <path d="M192 36 Q201 30 210 36" stroke="#0a1a0a" stroke-width="2" fill="none" opacity="0.75"/>
+    <g opacity="0.65">
+      <rect x="18" y="24" width="116" height="74" fill="#050403" opacity="0.70"/>
+      <rect x="18" y="24" width="116" height="18" fill="#0a0806" opacity="0.45"/>
+      <rect x="18" y="44" width="116" height="2" fill="#120f0c" opacity="0.35"/>
+      <rect x="18" y="60" width="116" height="2" fill="#120f0c" opacity="0.25"/>
+      <rect x="18" y="76" width="116" height="2" fill="#120f0c" opacity="0.18"/>
     </g>
 
     <g opacity="0.85">
-      <rect x="22" y="112" width="92" height="30" fill="#020404" stroke="#0a1a0a" stroke-width="1"/>
-      <rect x="122" y="114" width="46" height="24" fill="#020404" stroke="#0a1a0a" stroke-width="1"/>
-      <rect x="174" y="112" width="52" height="28" fill="#020404" stroke="#0a1a0a" stroke-width="1"/>
-      <line x1="22" y1="126" x2="114" y2="126" stroke="#071307" stroke-width="1" opacity="0.14"/>
+      <rect x="142" y="22" width="80" height="78" fill="#000" opacity="0.65"/>
+      <rect x="142" y="22" width="80" height="78" fill="#001000" opacity="0.06"/>
+      <path d="M144 30 L220 30" stroke="#001600" stroke-width="1" opacity="0.10"/>
+      <path d="M144 44 L220 44" stroke="#001600" stroke-width="1" opacity="0.08"/>
+      <path d="M144 58 L220 58" stroke="#001600" stroke-width="1" opacity="0.06"/>
+      <path d="M144 72 L220 72" stroke="#001600" stroke-width="1" opacity="0.05"/>
+    </g>
+
+    <g opacity="0.95">
+      <rect x="128" y="22" width="12" height="78" fill="#0b0a09"/>
+      <rect x="126" y="22" width="2" height="78" fill="#1a1612" opacity="0.9"/>
+      <rect x="140" y="22" width="2" height="78" fill="#1a1612" opacity="0.7"/>
+    </g>
+
+    <g opacity="0.55">
+      <rect x="10" y="108" width="220" height="4" fill="#020404" opacity="0.9"/>
     </g>
   `),
   '6B': () => camSvgTemplate('SCIENCE LAB', `
@@ -360,31 +288,45 @@ const CAM_SCENES = {
       <line x1="24" y1="126" x2="100" y2="126" stroke="#071307" stroke-width="1" opacity="0.14"/>
     </g>
   `),
-  '7A': () => camSvgTemplate('ROOFTOP ACCESS', `
-    <rect x="10" y="20" width="220" height="82" fill="#020404" stroke="#081408" stroke-width="1" opacity="0.65"/>
+  '7A': () => camSvgTemplate('RIGHT DOOR', `
+    <rect x="10" y="18" width="220" height="90" fill="#030606" stroke="#081408" stroke-width="1" opacity="0.75"/>
 
-    <rect x="10" y="20" width="220" height="46" fill="#030606" opacity="0.9"/>
-    <path d="M10 66 L52 48 L92 64 L136 44 L176 64 L206 50 L230 60 L230 102 L10 102 Z" fill="#020404" opacity="0.92"/>
-    <line x1="10" y1="66" x2="230" y2="66" stroke="#0a1a0a" stroke-width="1" opacity="0.6"/>
-    <line x1="10" y1="84" x2="230" y2="84" stroke="#071307" stroke-width="1" opacity="0.12"/>
+    <rect x="14" y="22" width="88" height="78" fill="#010101" opacity="0.98"/>
+    <rect x="102" y="22" width="124" height="78" fill="#020404" opacity="0.95"/>
 
-    <rect x="92" y="72" width="56" height="28" fill="#020404" stroke="#0a1a0a" stroke-width="1" opacity="0.95"/>
-    <text x="120" y="90" font-size="7" fill="#063006" font-family="monospace" text-anchor="middle" opacity="0.75">ACCESS DOOR</text>
-    <circle cx="102" cy="86" r="2" fill="#001200"/>
-
-    <g opacity="0.65">
-      <rect x="16" y="112" width="96" height="30" fill="#020404" stroke="#0a1a0a" stroke-width="1"/>
-      <rect x="118" y="114" width="108" height="26" fill="#020404" stroke="#0a1a0a" stroke-width="1"/>
-      <line x1="16" y1="126" x2="112" y2="126" stroke="#071307" stroke-width="1" opacity="0.12"/>
+    <g opacity="0.85">
+      <rect x="18" y="22" width="80" height="78" fill="#000" opacity="0.65"/>
+      <rect x="18" y="22" width="80" height="78" fill="#001000" opacity="0.06"/>
+      <path d="M20 30 L96 30" stroke="#001600" stroke-width="1" opacity="0.10"/>
+      <path d="M20 44 L96 44" stroke="#001600" stroke-width="1" opacity="0.08"/>
+      <path d="M20 58 L96 58" stroke="#001600" stroke-width="1" opacity="0.06"/>
+      <path d="M20 72 L96 72" stroke="#001600" stroke-width="1" opacity="0.05"/>
     </g>
 
-    <circle cx="210" cy="32" r="10" fill="#001200" opacity="0.08"/>
+    <g opacity="0.65">
+      <rect x="106" y="24" width="116" height="74" fill="#050403" opacity="0.70"/>
+      <rect x="106" y="24" width="116" height="18" fill="#0a0806" opacity="0.45"/>
+      <rect x="106" y="44" width="116" height="2" fill="#120f0c" opacity="0.35"/>
+      <rect x="106" y="60" width="116" height="2" fill="#120f0c" opacity="0.25"/>
+      <rect x="106" y="76" width="116" height="2" fill="#120f0c" opacity="0.18"/>
+    </g>
+
+    <g opacity="0.95">
+      <rect x="100" y="22" width="12" height="78" fill="#0b0a09"/>
+      <rect x="98" y="22" width="2" height="78" fill="#1a1612" opacity="0.7"/>
+      <rect x="112" y="22" width="2" height="78" fill="#1a1612" opacity="0.9"/>
+    </g>
+
+    <g opacity="0.55">
+      <rect x="10" y="108" width="220" height="4" fill="#020404" opacity="0.9"/>
+    </g>
   `),
 };
 
 function updateCamScene(){
   const svg=document.getElementById('cam-svg');
   if(!svg) return;
+  if(state.currentCam==='6B') state.currentCam='1A';
   const maker=CAM_SCENES[state.currentCam] || CAM_SCENES['1A'];
   svg.innerHTML=maker();
 }
@@ -395,6 +337,7 @@ let state = {
   doorLeft:false, doorRight:false, currentCam:'1A',
   morganLoc:'5A', morganMoveCooldown:0, morganAtDoor:null,
   morganAggression:0.55, jumpscarePending:false, gameOver:false, won:false,
+  lastKiller:null,
   morganCamLoc:null,
   morganCamObservedSeconds:0,
   morganCamObserveTargetSeconds:0,
@@ -403,13 +346,17 @@ let state = {
   morganCamReappearSeconds:0,
   morganCamNextLoc:null,
 
+  shadowCamLoc:null,
+  shadowAtDoor:null,
+  shadowDoorPresenceSeconds:0,
+  shadowDoorScareLimitSeconds:0,
+  shadowMoveToDoorSeconds:0,
+  shadowPresenceSeconds:0,
+  shadowCooldownSeconds:0,
+
   lightLeft:false,
   lightRight:false,
-  epsilonAtDoor:null,
-  epsilonDoorSeconds:0,
-  epsilonScareLimitSeconds:0,
-  epsilonCooldownSeconds:0,
-  epsilonFleeSeconds:0,
+  camLightOn:false,
 };
 
 let gameInterval=null, camTsInterval=null, alertTimeout=null;
@@ -603,18 +550,15 @@ const AUDIO={
   }
 };
 
-function chance(p){
-  return Math.random()<p;
-}
-
 function isCamPanelOpen(){
   const overlay=document.getElementById('cam-panel-overlay');
   if(!overlay) return false;
   return overlay.style.display!=='none' && overlay.style.display!=='';
 }
 
-function pickRandomCam(exclude){
-  const choices=CAMS.filter(c=>c!==exclude);
+function pickRandomMorganCam(exclude){
+  const blocked=new Set(['6A','6B','7A']);
+  const choices=CAMS.filter(c=>c!==exclude && !blocked.has(c));
   return choices[Math.floor(Math.random()*choices.length)];
 }
 
@@ -625,23 +569,80 @@ function initCamStareTimers(){
   state.morganCamScareLimitSeconds=randInt(30,50);
   state.morganCamReappearSeconds=0;
   state.morganCamNextLoc=null;
+  updateCamButtonDanger();
+}
+
+function updateCamButtonDanger(){
+  const btn=document.getElementById('btn-cam');
+  if(!btn){
+    return;
+  }
+
+  if(state.gameOver || !state.running){
+    btn.classList.remove('danger');
+    btn.style.animationDuration='';
+    return;
+  }
+
+  if(isCamPanelOpen()){
+    btn.classList.remove('danger');
+    btn.style.animationDuration='';
+    return;
+  }
+
+  if(!state.morganCamLoc){
+    btn.classList.remove('danger');
+    btn.style.animationDuration='';
+    return;
+  }
+
+  const limit=Math.max(1,(state.morganCamScareLimitSeconds||0));
+  const presence=Math.max(0,(state.morganCamPresenceSeconds||0));
+  const t=Math.min(1,Math.max(0,presence/limit));
+
+  if(t<=0.15){
+    btn.classList.remove('danger');
+    btn.style.animationDuration='';
+    return;
+  }
+
+  btn.classList.add('danger');
+  const dur=0.95-(0.75*t);
+  btn.style.animationDuration=`${Math.max(0.18,dur).toFixed(2)}s`;
 }
 
 function chaseMorganOffCam(){
-  state.morganCamLoc=pickRandomCam(state.currentCam);
-  state.morganLoc=state.morganCamLoc;
+  const next=pickRandomMorganCam(state.morganCamLoc || state.currentCam);
+  state.morganCamNextLoc=next;
+  state.morganCamLoc=null;
+  state.morganLoc='offcam';
   state.morganCamObservedSeconds=0;
   state.morganCamPresenceSeconds=0;
-  state.morganCamReappearSeconds=0;
-  state.morganCamNextLoc=null;
-  state.morganCamObserveTargetSeconds=randInt(6,10);
-  state.morganCamScareLimitSeconds=randInt(30,50);
+  state.morganCamReappearSeconds=randInt(10,15);
   updateCamDanger();
+  updateCamButtonDanger();
   checkMorganOnCurrentCam();
 }
 
 function handleMorganCameraBehavior(){
   if(state.gameOver || !state.running) return;
+
+  if(state.morganCamReappearSeconds>0){
+    state.morganCamReappearSeconds--;
+    if(state.morganCamReappearSeconds===0 && state.morganCamNextLoc){
+      state.morganCamLoc=state.morganCamNextLoc;
+      state.morganCamNextLoc=null;
+      state.morganLoc=state.morganCamLoc;
+      state.morganCamObservedSeconds=0;
+      state.morganCamObserveTargetSeconds=randInt(6,10);
+      state.morganCamPresenceSeconds=0;
+      state.morganCamScareLimitSeconds=randInt(30,50);
+      updateCamDanger();
+      updateCamButtonDanger();
+      checkMorganOnCurrentCam();
+    }
+    return;
+  }
 
   if(!state.morganCamLoc && CAMS.includes(state.morganLoc)){
     state.morganCamLoc=state.morganLoc;
@@ -655,7 +656,7 @@ function handleMorganCameraBehavior(){
 
   if(isCamPanelOpen()){
     const watching=(state.currentCam===state.morganCamLoc);
-    if(watching){
+    if(watching && state.camLightOn){
       state.morganCamObservedSeconds++;
       if(state.morganCamObservedSeconds>=state.morganCamObserveTargetSeconds){
         showAlert('⚠ HE DOESN\'T LIKE TO BE WATCHED ⚠');
@@ -666,17 +667,21 @@ function handleMorganCameraBehavior(){
       state.morganCamObservedSeconds=0;
     }
 
+    updateCamButtonDanger();
+
     return;
   }
 
   state.morganCamPresenceSeconds++;
+  updateCamButtonDanger();
   if(state.morganCamPresenceSeconds>=state.morganCamScareLimitSeconds){
-    triggerJumpscare();
+    triggerJumpscare('morgan');
   }
   return;
 }
 
 function getMorganActiveCam(){
+  if(state.morganCamReappearSeconds>0) return null;
   if(state.morganAtDoor==='left') return '1A';
   if(state.morganAtDoor==='right') return '1B';
   if(state.morganCamLoc) return state.morganCamLoc;
@@ -685,20 +690,37 @@ function getMorganActiveCam(){
 }
 
 function openCamPanel(){
-  const overlay=document.getElementById('cam-panel-overlay');
-  if(!overlay) return;
-  overlay.style.display='flex';
+  if(!state.running||state.gameOver||state.power<=0) return;
+  document.getElementById('cam-panel-overlay').style.display='flex';
   AUDIO.sfxCamOpen();
+  state.camLightOn=false;
+  updateCamLightVisual();
   checkMorganOnCurrentCam();
-  checkEpsteinOnCurrentCam();
+  checkShadowOnCurrentCam();
 }
 
 function closeCamPanel(){
-  const overlay=document.getElementById('cam-panel-overlay');
-  if(!overlay) return;
-  overlay.style.display='none';
+  document.getElementById('cam-panel-overlay').style.display='none';
   AUDIO.sfxCamClose();
-  hideEpsteinOnCam();
+  state.camLightOn=false;
+  updateCamLightVisual();
+  hideMorganOnCam();
+  hideShadowOnCam();
+}
+
+function updateCamLightVisual(){
+  const feed=document.getElementById('cam-feed');
+  if(feed) feed.classList.toggle('cam-lit',!!state.camLightOn);
+  const btn=document.getElementById('btn-cam-light');
+  if(btn) btn.classList.toggle('on',!!state.camLightOn);
+}
+
+function toggleCamLight(){
+  if(!state.running||state.gameOver||state.power<=0) return;
+  if(!isCamPanelOpen()) return;
+  state.camLightOn=!state.camLightOn;
+  AUDIO.sfxLight();
+  updateCamLightVisual();
 }
 
 function toggleCamPanel(){
@@ -757,28 +779,34 @@ function startGame(){
 function resetState(){
   state.running=true; state.power=100; state.timeElapsed=0;
   state.doorLeft=false; state.doorRight=false; state.currentCam='1A';
-  state.morganLoc=pickRandomCam(null); state.morganMoveCooldown=0; state.morganAtDoor=null;
+  state.morganLoc=pickRandomMorganCam(null); state.morganMoveCooldown=0; state.morganAtDoor=null;
   state.morganAggression=0.55+(state.night-1)*0.1;
   state.jumpscarePending=false; state.gameOver=false; state.won=false;
+  state.lastKiller=null;
   state.morganCamLoc=null;
   initCamStareTimers();
 
+  state.shadowCamLoc=null;
+  state.shadowAtDoor=null;
+  state.shadowDoorPresenceSeconds=0;
+  state.shadowDoorScareLimitSeconds=0;
+  state.shadowMoveToDoorSeconds=0;
+  state.shadowPresenceSeconds=0;
+  state.shadowCooldownSeconds=randInt(10,18);
+
   state.lightLeft=false; state.lightRight=false;
-  state.epsilonAtDoor='left';
-  state.epsilonDoorSeconds=0;
-  state.epsilonScareLimitSeconds=randInt(5,9);
-  state.epsilonCooldownSeconds=randInt(4,10);
-  state.epsilonFleeSeconds=0;
+  state.camLightOn=false;
+  updateCamLightVisual();
 
   setDoorVisual('left',false); setDoorVisual('right',false);
   setLightVisual('left',false); setLightVisual('right',false);
-  updateEpsilonVisual();
+  updateShadowOfficeVisual();
   document.getElementById('morgan-left').className='morgan-office left';
   document.getElementById('morgan-right').className='morgan-office right';
   document.getElementById('fear-overlay').className='fear-overlay';
   document.getElementById('powerout-overlay').classList.remove('show');
   hideMorganOnCam(); clearAlert();
-  hideEpsteinOnCam();
+  hideShadowOnCam();
   CAMS.forEach(c=>{const b=document.getElementById(`cambtn-${c}`);if(b)b.className='cam-btn'+(c==='1A'?' active':'');});
   updateCamScene();
   updateCamDanger();
@@ -796,9 +824,8 @@ function tick(){
   state.power=Math.max(0,state.power-drain);
   updatePowerDisplay();
   updateClock();
-  handleEpsilon();
+  handleShadowAI();
   handleMorganCameraBehavior();
-  runMorganAI();
   if(state.timeElapsed/NIGHT_DURATION>=1&&!state.gameOver){winNight();return;}
   if(state.power<=0&&!state.gameOver){powerOut();return;}
 }
@@ -808,6 +835,106 @@ function updateClock(){
   const hi=Math.min(5,Math.floor(p*6));
   const min=Math.floor((p*6-hi)*60);
   document.getElementById('clock-display').textContent=`${[12,1,2,3,4,5][hi]}:${String(min).padStart(2,'0')} AM`;
+}
+
+function isAfter1AM(){
+  return state.timeElapsed >= (NIGHT_DURATION/6);
+}
+
+function spawnShadow(){
+  const side=(Math.random()<0.5)?'left':'right';
+  state.shadowCamLoc=(side==='left')?'6A':'7A';
+  state.shadowPresenceSeconds=0;
+  state.shadowMoveToDoorSeconds=Math.max(6, Math.round(randInt(30,50)*0.8));
+  state.shadowAtDoor=null;
+  state.shadowCooldownSeconds=0;
+  checkShadowOnCurrentCam();
+}
+
+function handleShadowAI(){
+  if(!state.running||state.gameOver||state.power<=0) return;
+  if(!isAfter1AM()) return;
+
+  if(state.shadowCooldownSeconds>0) state.shadowCooldownSeconds--;
+
+  if(!state.shadowCamLoc && !state.shadowAtDoor){
+    if(state.shadowCooldownSeconds<=0){
+      spawnShadow();
+    }
+    return;
+  }
+
+  if(state.shadowCamLoc){
+    state.shadowPresenceSeconds++;
+    if(state.shadowPresenceSeconds>=state.shadowMoveToDoorSeconds){
+      const side=(state.shadowCamLoc==='6A')?'left':'right';
+      state.shadowCamLoc=null;
+      state.shadowAtDoor=side;
+      state.shadowDoorPresenceSeconds=0;
+      state.shadowDoorScareLimitSeconds=randInt(10,16);
+      showAlert(side==='left'?'⚠ SOMETHING IS AT THE LEFT DOOR ⚠':'⚠ SOMETHING IS AT THE RIGHT DOOR ⚠');
+      checkShadowOnCurrentCam();
+      updateShadowOfficeVisual();
+    }
+    checkShadowOnCurrentCam();
+    return;
+  }
+
+  if(state.shadowAtDoor){
+    const side=state.shadowAtDoor;
+    const closed=(side==='left')?state.doorLeft:state.doorRight;
+    if(closed){
+      repelShadowFromDoor(side,true);
+      return;
+    }
+
+    state.shadowDoorPresenceSeconds++;
+    updateShadowOfficeVisual();
+    if(state.shadowDoorPresenceSeconds>=state.shadowDoorScareLimitSeconds){
+      triggerJumpscare('shadow');
+    }
+  }
+}
+
+function repelShadowFromDoor(side,showMsg){
+  state.shadowAtDoor=null;
+  state.shadowDoorPresenceSeconds=0;
+  state.shadowDoorScareLimitSeconds=0;
+  state.shadowCooldownSeconds=randInt(12,20);
+  updateShadowOfficeVisual();
+  if(showMsg) showAlert('⚠ DOOR SHUT — IT BACKED OFF ⚠');
+}
+
+function updateShadowOfficeVisual(){
+  const l=document.getElementById('shadow-left');
+  const r=document.getElementById('shadow-right');
+  if(l) l.className='shadow-office left';
+  if(r) r.className='shadow-office right';
+
+  if(!state.shadowAtDoor) return;
+  const side=state.shadowAtDoor;
+  const lightOn=(side==='left')?state.lightLeft:state.lightRight;
+  const doorClosed=(side==='left')?state.doorLeft:state.doorRight;
+  if(doorClosed) return;
+  if(!lightOn) return;
+  const el=document.getElementById(`shadow-${side}`);
+  if(el) el.classList.add('peek');
+}
+
+function checkShadowOnCurrentCam(){
+  const onCam=(isCamPanelOpen() && state.shadowCamLoc && state.currentCam===state.shadowCamLoc);
+  if(onCam) showShadowOnCam(); else hideShadowOnCam();
+}
+
+function showShadowOnCam(){
+  const el=document.getElementById('shadow-on-cam');
+  if(el) el.style.display='flex';
+  document.getElementById('cam-static').className='cam-static on';
+}
+
+function hideShadowOnCam(){
+  const el=document.getElementById('shadow-on-cam');
+  if(el) el.style.display='none';
 }
 
 function updatePowerDisplay(){
@@ -821,10 +948,6 @@ function updatePowerDisplay(){
   else{bar.style.background='var(--red)';pctEl.style.color='var(--red)';}
 }
 
-function runMorganAI(){
-  return;
-}
-
 function moveMorganCloser(){
   const goDoorChance=Math.min(0.75, 0.18 + state.morganAggression*0.22 + (state.night-1)*0.05);
   if(Math.random()<goDoorChance){
@@ -833,7 +956,7 @@ function moveMorganCloser(){
     state.morganLoc=side+'_door';
     showMorganAtDoor(side);
   } else {
-    const nextCam=pickRandomCam(CAMS.includes(state.morganLoc)?state.morganLoc:null);
+    const nextCam=pickRandomMorganCam(CAMS.includes(state.morganLoc)?state.morganLoc:null);
     state.morganLoc=nextCam;
   }
   checkMorganOnCurrentCam();
@@ -843,25 +966,21 @@ function attemptEntry(){
   const side=state.morganAtDoor;
   const closed=side==='left'?state.doorLeft:state.doorRight;
   if(closed){
-    state.morganAtDoor=null; state.morganLoc=pickRandomCam(null);
+    state.morganAtDoor=null; state.morganLoc=pickRandomMorganCam(null);
     hideMorganAtDoor(side);
     showAlert('⚠ DOOR HELD — HE WALKED AWAY ⚠');
   } else {
-    triggerJumpscare();
+    triggerJumpscare('morgan');
   }
 }
 
-const kidPhrases=['close the door... close the door...','don\'t breathe...','please please please...','he\'s right there...','i want to go home...'];
-
 function showMorganAtDoor(side){
   document.getElementById(`morgan-${side}`).className=`morgan-office ${side} peek`;
-  document.getElementById('fear-overlay').className='fear-overlay high';
   showAlert(side==='left'?'⚠ HE\'S AT THE LEFT DOOR ⚠':'⚠ HE\'S AT THE RIGHT DOOR ⚠');
 }
 
 function hideMorganAtDoor(side){
   document.getElementById(`morgan-${side}`).className=`morgan-office ${side}`;
-  document.getElementById('fear-overlay').className='fear-overlay';
 }
 
 function checkMorganOnCurrentCam(){
@@ -904,8 +1023,17 @@ function updateCamDanger(){
 function toggleDoor(side){
   if(!state.running||state.gameOver||state.power<=0)return;
   AUDIO.sfxDoor();
-  if(side==='left'){state.doorLeft=!state.doorLeft;setDoorVisual('left',state.doorLeft);}
-  else{state.doorRight=!state.doorRight;setDoorVisual('right',state.doorRight);}
+  if(side==='left'){
+    state.doorLeft=!state.doorLeft;
+    setDoorVisual('left',state.doorLeft);
+    if(state.doorLeft && state.shadowAtDoor==='left') repelShadowFromDoor('left',true);
+  }
+  else{
+    state.doorRight=!state.doorRight;
+    setDoorVisual('right',state.doorRight);
+    if(state.doorRight && state.shadowAtDoor==='right') repelShadowFromDoor('right',true);
+  }
+  updateShadowOfficeVisual();
 }
 
 function setDoorVisual(side,closed){
@@ -916,14 +1044,22 @@ function setDoorVisual(side,closed){
 }
 
 function switchCam(cam){
+  if(cam==='6B') return;
   state.currentCam=cam;
   CAMS.forEach(c=>{const b=document.getElementById(`cambtn-${c}`);if(b)b.classList.toggle('active',c===cam);});
   document.getElementById('cam-static').className='cam-static on';
-  setTimeout(()=>{if(document.getElementById('morgan-on-cam').style.display==='none')document.getElementById('cam-static').className='cam-static';},180);
+  setTimeout(()=>{
+    const m=document.getElementById('morgan-on-cam');
+    const s=document.getElementById('shadow-on-cam');
+    const mOn=!!m && m.style.display!=='none' && m.style.display!=='';
+    const sOn=!!s && s.style.display!=='none' && s.style.display!=='';
+    if(!mOn && !sOn) document.getElementById('cam-static').className='cam-static';
+  },180);
   document.getElementById('cam-feed-label').textContent=`CAM ${cam} — ${CAM_LABELS[cam]||cam}`;
+  updateCamLightVisual();
   updateCamScene();
   checkMorganOnCurrentCam();
-  checkEpsteinOnCurrentCam();
+  checkShadowOnCurrentCam();
 }
 
 function showAlert(msg){
@@ -938,15 +1074,38 @@ function powerOut(){
   state.running=false;state.gameOver=true;
   clearInterval(gameInterval);
   document.getElementById('powerout-overlay').classList.add('show');
-  setTimeout(()=>triggerJumpscare(),3500);
+  setTimeout(()=>triggerJumpscare('power'),3500);
 }
 
-function triggerJumpscare(){
-  if(state.jumpscarePending||state.won)return;
+function triggerJumpscare(killer){
+  if(state.jumpscarePending||state.won) return;
+  state.lastKiller=killer||state.lastKiller||'morgan';
   AUDIO.scream();
   AUDIO.stopAmbience();
   state.jumpscarePending=true;state.running=false;state.gameOver=true;
   clearInterval(gameInterval);clearInterval(camTsInterval);
+
+  const img=document.querySelector('#jumpscare-screen .jumpscare-img');
+  if(img){
+    img.classList.remove('shadow');
+    if(state.lastKiller==='shadow') img.classList.add('shadow');
+  }
+
+  const t=document.getElementById('scare-text');
+  const sub=document.getElementById('scare-sub');
+  if(t && sub){
+    if(state.lastKiller==='shadow'){
+      t.textContent='CAUGHT YOU';
+      sub.textContent='the blue shadow slipped in when you blinked';
+    } else if(state.lastKiller==='power'){
+      t.textContent='LIGHTS OUT';
+      sub.textContent='with no power, you were never safe';
+    } else {
+      t.textContent='FOUND YOU';
+      sub.textContent='morgan was right behind you the whole time';
+    }
+  }
+
   document.body.style.background='#fff';
   setTimeout(()=>{document.body.style.background='#000';showScreen('jumpscare-screen');},80);
 }
@@ -954,7 +1113,8 @@ function triggerJumpscare(){
 function showLose(){
   const p=state.timeElapsed/NIGHT_DURATION;
   const hi=Math.min(5,Math.floor(p*6));
-  document.getElementById('lose-stat').textContent=`NIGHT ${state.night} · CAUGHT AROUND ${['12 AM','1 AM','2 AM','3 AM','4 AM','5 AM'][hi]}`;
+  const who=(state.lastKiller==='shadow')?'SHADOW':(state.lastKiller==='power')?'THE DARK':'MORGAN';
+  document.getElementById('lose-stat').textContent=`NIGHT ${state.night} · KILLED BY ${who} · AROUND ${['12 AM','1 AM','2 AM','3 AM','4 AM','5 AM'][hi]}`;
   showScreen('lose-screen');
 }
 

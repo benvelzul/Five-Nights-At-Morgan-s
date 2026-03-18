@@ -152,8 +152,16 @@ body {
 .game-main { display: flex; flex: 1; overflow: hidden; }
 
 /* OFFICE */
-.office-view { flex: 1; position: relative; overflow: hidden; background: #060504; }
-.office-svg { width: 100%; height: 100%; }
+.office-view {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #060504;
+  background-image: url('fnaf office.jpg');
+  background-size: cover;
+  background-position: center;
+}
+.office-svg { width: 100%; height: 100%; display: none; }
 
 .door-btn {
   position: absolute; bottom: 24%; width: 54px; padding: 12px 6px;
@@ -163,8 +171,8 @@ body {
 }
 .door-btn:hover { background: #1a1a1a; color: var(--amber); border-color: var(--amber); }
 .door-btn.closed { background: #1a0000; color: var(--red); border-color: var(--red); }
-.door-btn#btn-left { left: 14px; }
-.door-btn#btn-right { right: 14px; }
+.door-btn#btn-left { left: 22px; }
+.door-btn#btn-right { right: 22px; }
 
 .light-btn {
   position: absolute;
@@ -183,56 +191,113 @@ body {
 }
 .light-btn:hover { background: #1a1a1a; color: var(--yellow); border-color: var(--yellow); }
 .light-btn.on { background: rgba(255,230,100,0.08); color: var(--yellow); border-color: rgba(255,230,100,0.6); box-shadow: 0 0 22px rgba(255,230,100,0.12); }
-.light-btn#btn-light-left { left: 14px; }
-.light-btn#btn-light-right { right: 14px; }
+.light-btn#btn-light-left { left: 22px; }
+.light-btn#btn-light-right { right: 22px; }
 
 .door-overlay-left, .door-overlay-right {
-  position: absolute; top: 0; bottom: 0; width: 240px;
-  pointer-events: none; transition: opacity 0.3s; opacity: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 300px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-110%);
+  transition: transform 0.22s ease-out, opacity 0.18s ease-out;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(10,10,10,0.96) 45%, rgba(0,0,0,0.92) 100%);
+  box-shadow: 0 0 22px rgba(0,0,0,0.65);
 }
-.door-overlay-left { left: 0; background: linear-gradient(to right, rgba(0,0,0,0.92), rgba(0,0,0,0.55), transparent); }
-.door-overlay-right { right: 0; background: linear-gradient(to left, rgba(0,0,0,0.92), rgba(0,0,0,0.55), transparent); }
-.door-overlay-left.closed, .door-overlay-right.closed { opacity: 1; }
+.door-overlay-left {
+  left: 0;
+}
+.door-overlay-right {
+  right: 0;
+  transform: translateX(110%);
+}
+.door-overlay-left::before, .door-overlay-right::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 10px);
+  opacity: 0.35;
+}
+.door-overlay-left::after, .door-overlay-right::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  background: rgba(255,255,255,0.04);
+  opacity: 0.65;
+}
+.door-overlay-left::after { right: 6px; }
+.door-overlay-right::after { left: 6px; }
+
+.door-overlay-left.closed {
+  opacity: 1;
+  transform: translateX(0);
+}
+.door-overlay-right.closed {
+  opacity: 1;
+  transform: translateX(0);
+}
 
 .light-overlay-left, .light-overlay-right {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 280px;
+  width: 320px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.12s;
   z-index: 4;
 }
-.light-overlay-left { left: 0; background: radial-gradient(circle at 30% 55%, rgba(255,230,100,0.22) 0%, rgba(255,230,100,0.10) 35%, transparent 70%); }
-.light-overlay-right { right: 0; background: radial-gradient(circle at 70% 55%, rgba(255,230,100,0.22) 0%, rgba(255,230,100,0.10) 35%, transparent 70%); }
+.light-overlay-left { left: 0; background: radial-gradient(circle at 28% 56%, rgba(255,230,100,0.22) 0%, rgba(255,230,100,0.10) 35%, transparent 70%); }
+.light-overlay-right { right: 0; background: radial-gradient(circle at 72% 56%, rgba(255,230,100,0.22) 0%, rgba(255,230,100,0.10) 35%, transparent 70%); }
 .light-overlay-left.on, .light-overlay-right.on { opacity: 1; }
-
-.epsilon-door {
-  position: absolute;
-  bottom: 0;
-  width: 84px;
-  height: 170px;
-  background: linear-gradient(180deg, rgba(255,60,60,0.35), rgba(70,0,0,0.6));
-  border: 2px solid rgba(255,60,60,0.35);
-  opacity: 0.95;
-  z-index: 5;
-  filter: brightness(0.9) contrast(1.2) saturate(0.9);
-}
-.epsilon-door.left { left: 120px; }
-.epsilon-door.right { right: 120px; }
 
 .morgan-office {
   position: absolute; bottom: 0; opacity: 0;
   transition: opacity 0.5s; z-index: 5; filter: brightness(0.25) contrast(2.5);
 }
-.morgan-office.left { left: 118px; }
-.morgan-office.right { right: 118px; }
+.morgan-office.left { left: 78px; }
+.morgan-office.right { right: 78px; }
 .morgan-office.peek { opacity: 1; }
 
-.fear-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 6; background: rgba(139,0,0,0); transition: background 1s; }
-.fear-overlay.high { background: rgba(139,0,0,0.1); animation: fearpulse 0.9s ease-in-out infinite; }
+.shadow-office {
+  position: absolute;
+  bottom: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s, visibility 0s linear 0.18s;
+  z-index: 5;
+  filter: brightness(0.30) contrast(2.4) saturate(1.6) hue-rotate(200deg);
+}
+.shadow-office.left { left: 84px; }
+.shadow-office.right { right: 84px; }
+.shadow-office.peek {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.18s;
+}
+
+.fear-overlay { display: none; }
+.fear-overlay.high { display: none; }
 @keyframes fearpulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+
+.cam-toggle-btn.danger {
+  color: #ff6666;
+  border-color: rgba(255,60,60,0.65);
+  box-shadow: 0 0 16px rgba(255,40,40,0.20);
+  animation-name: camdanger;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@keyframes camdanger {
+  0%,100%{ background: #0b0b0b; filter: saturate(1); }
+  50%{ background: rgba(120,0,0,0.45); filter: saturate(1.2); }
+}
 
 .scanlines {
   position: absolute; inset: 0; pointer-events: none; z-index: 8;
@@ -321,24 +386,52 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  padding-bottom: 54px;
 }
 
 .cam-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 6px 10px;
-  background: #0e0e0e;
-  border: 1px solid #1c1c1c;
-  color: #5a5a5a;
-  font-size: 9px;
-  letter-spacing: 2px;
+  top: auto;
+  bottom: 12px;
+  right: auto;
+  left: 50%;
+  background: #0b0b0b;
+  border: 1px solid #222;
+  color: #777;
+  padding: 7px 12px;
+  font-size: 10px;
+  letter-spacing: 3px;
   cursor: pointer;
   z-index: 30;
+  transform: translateX(110px);
 }
 .cam-close:hover {
   color: #fff;
   border-color: #444;
+}
+
+.cam-light-btn {
+  position: absolute;
+  top: auto;
+  bottom: 12px;
+  right: auto;
+  left: 50%;
+  background: #0b0b0b;
+  border: 1px solid #222;
+  color: #777;
+  padding: 7px 12px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  cursor: pointer;
+  z-index: 30;
+  transform: translateX(-110px);
+}
+.cam-light-btn:hover { color: #fff; border-color: #444; }
+.cam-light-btn.on {
+  color: var(--yellow);
+  border-color: rgba(255,230,100,0.6);
+  background: rgba(255,230,100,0.06);
+  box-shadow: 0 0 18px rgba(255,230,100,0.12);
 }
 
 .cam-panel-overlay .cam-panel {
@@ -356,6 +449,31 @@ body {
   flex: 1; position: relative; background: #000; margin: 0; border: none;
   overflow: hidden; border-radius: 0; min-height: 0;
 }
+.cam-feed.cam-lit {
+  filter: brightness(1.65) contrast(1.15) saturate(1.1);
+}
+.cam-feed.cam-lit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(255,230,100,0.35) 0%, rgba(255,230,100,0.15) 40%, transparent 70%);
+  mix-blend-mode: overlay;
+}
+.cam-feed.cam-lit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(255,245,180,0.25) 0%, transparent 50%);
+  mix-blend-mode: screen;
+}
+.cam-feed.cam-lit .cam-overlay {
+  opacity: 0.35;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 3px);
+}
 .cam-feed-label { position: absolute; top: 5px; left: 7px; font-size: 9px; color: var(--green); letter-spacing: 2px; z-index: 2; }
 
 .cam-overlay {
@@ -370,9 +488,18 @@ body {
 .morgan-cam-figure { width: 70px; height: 120px; opacity: 0.9; background: rgba(120,0,0,0.55); border: 2px solid rgba(255,60,60,0.35); box-shadow: 0 0 18px rgba(255,0,0,0.18); filter: contrast(1.2); animation: morganstalk 0.3s ease-in-out infinite alternate; }
 @keyframes morganstalk { from{transform:translateX(-2px)} to{transform:translateX(2px)} }
 
-.epstein-on-cam { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; z-index: 4; background: rgba(0,0,0,0.22); }
-.epstein-cam-figure { width: 86px; height: 140px; opacity: 0.86; background: rgba(0,120,0,0.35); border: 2px solid rgba(0,255,80,0.28); box-shadow: 0 0 18px rgba(0,255,65,0.12); filter: contrast(1.25); animation: epsteinstalk 0.22s ease-in-out infinite alternate; }
-@keyframes epsteinstalk { from{transform:translateX(-3px) translateY(1px)} to{transform:translateX(3px) translateY(-1px)} }
+.shadow-on-cam { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 4; background: rgba(0,0,0,0.32); }
+.shadow-cam-figure {
+  width: 86px;
+  height: 132px;
+  opacity: 0.95;
+  background: radial-gradient(circle at 50% 25%, rgba(40,110,255,0.22) 0%, rgba(10,25,60,0.88) 40%, rgba(0,0,0,0.98) 100%);
+  border: 2px solid rgba(80,140,255,0.45);
+  box-shadow: 0 0 30px rgba(60,120,255,0.25), 0 0 18px rgba(0,0,0,0.65);
+  filter: contrast(1.35) brightness(0.95) saturate(1.35);
+  animation: shadowstalk 0.22s ease-in-out infinite alternate;
+}
+@keyframes shadowstalk { from{transform:translateX(-1px) scaleY(1.01)} to{transform:translateX(1px) scaleY(0.99)} }
 
 .cam-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 0 9px 8px; }
 .cam-btn {
@@ -382,6 +509,14 @@ body {
 .cam-btn:hover { border-color: #3a3a3a; color: #999; background: #131313; }
 .cam-btn.active { border-color: var(--green); color: var(--green); background: #001800; }
 .cam-btn.danger { border-color: var(--red) !important; color: var(--red) !important; background: #180000 !important; animation: dangerblink 0.5s step-end infinite; }
+.cam-btn.disabled, .cam-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: #121212;
+  color: #2b2b2b;
+  background: #070707;
+  text-decoration: line-through;
+}
 @keyframes dangerblink { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
 .cam-instructions { padding: 0 10px 10px; font-size: 9px; color: #1e1e1e; letter-spacing: 1px; line-height: 2; }
@@ -403,6 +538,13 @@ body {
   border: 3px solid rgba(255,40,40,0.25);
   box-shadow: 0 0 40px rgba(255,0,0,0.22);
   filter: contrast(1.25) saturate(0.8) brightness(0.9);
+}
+
+.jumpscare-img.shadow {
+  background: radial-gradient(circle at 50% 35%, rgba(80,140,255,0.30) 0%, rgba(10,25,60,0.78) 35%, rgba(0,0,0,0.98) 75%);
+  border: 3px solid rgba(80,140,255,0.26);
+  box-shadow: 0 0 46px rgba(60,120,255,0.22);
+  filter: contrast(1.25) saturate(1.05) brightness(0.95);
 }
 
 .scare-text { font-family: 'Creepster', cursive; font-size: clamp(38px,7vw,90px); color: #fff; letter-spacing: 6px; text-shadow: 0 0 30px rgba(255,0,0,0.9); margin-top: 20px; animation: scaretext 0.4s 0.3s both; }
