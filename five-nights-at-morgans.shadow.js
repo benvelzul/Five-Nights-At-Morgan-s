@@ -3,10 +3,14 @@ function isAfter1AM(){
 }
 
 function spawnShadow(){
+  const ai=(typeof getAILevel==='function')?getAILevel('shadow'):10;
+  const d=ai-10;
   const side=(Math.random()<0.5)?'left':'right';
   state.shadowCamLoc=(side==='left')?'6A':'7A';
   state.shadowPresenceSeconds=0;
-  state.shadowMoveToDoorSeconds=Math.max(6, Math.round(randInt(30,50)*0.8));
+  const moveBase=Math.round(randInt(30,50)*0.8);
+  const move=Math.max(5,Math.round(moveBase - (d*1.2)));
+  state.shadowMoveToDoorSeconds=move;
   state.shadowAtDoor=null;
   state.shadowCooldownSeconds=0;
   checkShadowOnCurrentCam();
@@ -32,7 +36,11 @@ function handleShadowAI(){
       state.shadowCamLoc=null;
       state.shadowAtDoor=side;
       state.shadowDoorPresenceSeconds=0;
-      state.shadowDoorScareLimitSeconds=randInt(10,16);
+      const ai=(typeof getAILevel==='function')?getAILevel('shadow'):10;
+      const d=ai-10;
+      const min=Math.max(4,Math.round(10 - (d*0.35)));
+      const max=Math.max(min+2,Math.round(16 - (d*0.45)));
+      state.shadowDoorScareLimitSeconds=randInt(min,max);
       showAlert(side==='left'?'⚠ SOMETHING IS AT THE LEFT DOOR ⚠':'⚠ SOMETHING IS AT THE RIGHT DOOR ⚠');
       checkShadowOnCurrentCam();
       updateShadowOfficeVisual();
@@ -58,10 +66,14 @@ function handleShadowAI(){
 }
 
 function repelShadowFromDoor(side,showMsg){
+  const ai=(typeof getAILevel==='function')?getAILevel('shadow'):10;
+  const d=ai-10;
   state.shadowAtDoor=null;
   state.shadowDoorPresenceSeconds=0;
   state.shadowDoorScareLimitSeconds=0;
-  state.shadowCooldownSeconds=randInt(12,20);
+  const min=Math.max(4,Math.round(12 - (d*0.4)));
+  const max=Math.max(min+3,Math.round(20 - (d*0.5)));
+  state.shadowCooldownSeconds=randInt(min,max);
   updateShadowOfficeVisual();
   if(showMsg) showAlert('⚠ DOOR SHUT — IT BACKED OFF ⚠');
 }

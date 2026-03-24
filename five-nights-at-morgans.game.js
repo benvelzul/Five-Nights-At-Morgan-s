@@ -11,6 +11,35 @@ function updatePowerDisplay(){
   else{bar.style.background='var(--red)';pctEl.style.color='var(--red)';}
 }
 
+function getStoryUnlocks(){
+  const n=Math.max(1,Number(state.night)||1);
+  return {
+    morgan:true,
+    shadow:n>=2,
+    hamlet:n>=3,
+    twigg:n>=4,
+    hodge:n>=5,
+  };
+}
+
+function isEnemyEnabled(name){
+  const key=String(name||'').toLowerCase();
+  if(key==='morgan') return true;
+  if(state && state.mode==='custom') return true;
+  const u=getStoryUnlocks();
+  return !!u[key];
+}
+
+function applyStoryAILevels(){
+  if(state && state.mode==='custom') return;
+  const n=Math.max(1,Number(state.night)||1);
+  const base=clampAI(5 + ((n-1)*2));
+  const u=getStoryUnlocks();
+  Object.keys(u).forEach(k=>{
+    if(u[k]) setAILevel(k,base);
+  });
+}
+
 function updateClock(){
   const p=state.timeElapsed/NIGHT_DURATION;
   const hi=Math.min(5,Math.floor(p*6));
@@ -52,6 +81,29 @@ function getRawDrain(){
   if(state.lightRight) raw+=0.22;
   if(state.camLightOn) raw+=0.15;
   return raw;
+}
+
+function setNextMorganMoveCooldown(){
+  const ai=(typeof getAILevel==='function')?getAILevel('morgan'):10;
+  const d=ai-10;
+  const min=Math.max(4,Math.round(10 - (d*0.35)));
+  const max=Math.max(min+2,Math.round(16 - (d*0.45)));
+  state.morganMoveCooldown=randInt(min,max);
+}
+
+function handleMorganOfficeBehavior(){
+  if(state.gameOver || !state.running || state.power<=0) return;
+  if(typeof moveMorganCloser!=='function' || typeof attemptEntry!=='function') return;
+
+  if(state.morganMoveCooldown>0) state.morganMoveCooldown--;
+  if(state.morganMoveCooldown>0) return;
+
+  if(state.morganAtDoor){
+    attemptEntry();
+  } else {
+    moveMorganCloser();
+  }
+  setNextMorganMoveCooldown();
 }
 
 function updateHamletVisual(){
@@ -109,14 +161,14 @@ function startTwiggMinigame(){
   if(state.twiggActive) return;
 
   state.twiggActive=true;
-  state.twiggFailSeconds=randInt(5,7);
+  state.twiggFailSeconds=randInt(15,20);
   state.twiggNeedle=Math.random();
   state.twiggNeedleDir=Math.random()<0.5?-1:1;
 
   const ai=(typeof getAILevel==='function')?getAILevel('twigg'):10;
-  const width=Math.max(0.06, 0.26 - (ai*0.008));
+  const width=Math.max(0.20, 0.60 - (ai*0.008));
   state.twiggSafeWidth=width;
-  state.twiggSafeCenter=0.15 + Math.random()*0.70;
+  state.twiggSafeCenter=0.25 + Math.random()*0.50;
 
   updateTwiggUI();
   showAlert('⚠ MR TWIGG — DON\'T MISS ⚠');
@@ -125,7 +177,7 @@ function startTwiggMinigame(){
   twiggInterval=setInterval(()=>{
     if(!state.twiggActive || state.gameOver) return;
     const ai2=(typeof getAILevel==='function')?getAILevel('twigg'):10;
-    const speed=0.018 + (ai2*0.0023);
+    const speed=0.008 + (ai2*0.001);
     state.twiggNeedle+=state.twiggNeedleDir*speed;
     if(state.twiggNeedle<=0){state.twiggNeedle=0;state.twiggNeedleDir=1;}
     if(state.twiggNeedle>=1){state.twiggNeedle=1;state.twiggNeedleDir=-1;}
@@ -156,37 +208,70 @@ function twiggAttempt(){
 }
 
 function startGame(){
-  AUDIO.unlock();
-  AUDIO.startAmbience();
-  resetState();
-  showScreen('game-screen');
-  $id('topbar-night').textContent=`NIGHT ${state.night}`;
-  updatePowerDisplay();
-  updateCamScene();
-  initCamStareTimers();
-  if(gameInterval) clearInterval(gameInterval);
-  gameInterval=setInterval(tick,1000);
-  if(camTsInterval) clearInterval(camTsInterval);
-  let s=0;
-  camTsInterval=setInterval(()=>{
-    s++;
-    const hh=String(Math.floor(s/3600)).padStart(2,'0');
-    const mm=String(Math.floor((s%3600)/60)).padStart(2,'0');
-    const ss=String(s%60).padStart(2,'0');
-    const el=$id('cam-timestamp');
-    if(el) el.textContent=`${hh}:${mm}:${ss}`;
-  },1000);
+  try {
+    console.log('Starting game...');
+    if(!state.mode) state.mode='story';
+    applyStoryAILevels();
+    if(window.AUDIO){
+      AUDIO.unlock();
+      AUDIO.startAmbience();
+    }
+    resetState();
+    showScreen('game-screen');
+    $id('topbar-night').textContent=`NIGHT ${state.night}`;
+    updatePowerDisplay();
+    updateCamScene();
+    initCamStareTimers();
+
+    setNextMorganMoveCooldown();
+    if(gameInterval) clearInterval(gameInterval);
+    gameInterval=setInterval(tick,1000);
+    if(camTsInterval) clearInterval(camTsInterval);
+    let s=0;
+    camTsInterval=setInterval(()=>{
+      s++;
+      const hh=String(Math.floor(s/3600)).padStart(2,'0');
+      const mm=String(Math.floor((s%3600)/60)).padStart(2,'0');
+      const ss=String(s%60).padStart(2,'0');
+      const el=$id('cam-timestamp');
+      if(el) el.textContent=`${hh}:${mm}:${ss}`;
+    },1000);
+    console.log('Game started successfully');
+  } catch(error){
+    console.error('Error starting game:', error);
+  }
 }
 
 function resetState(){
-  state.running=true; state.power=100; state.timeElapsed=0;
-  state.doorLeft=false; state.doorRight=false; state.currentCam='1A';
-  state.morganLoc=pickRandomMorganCam(null); state.morganMoveCooldown=0; state.morganAtDoor=null;
-  state.morganAggression=0.55+(state.night-1)*0.1;
-  state.jumpscarePending=false; state.gameOver=false; state.won=false;
-  state.lastKiller=null;
-  state.morganCamLoc=null;
-  initCamStareTimers();
+  try {
+    console.log('Resetting game state...');
+    if(!state) {
+      console.error('Game state not initialized');
+      return;
+    }
+    
+    state.running=true; 
+    state.power=100; 
+    state.timeElapsed=0;
+    state.doorLeft=false; 
+    state.doorRight=false; 
+    state.currentCam='1A';
+    state.morganLoc=pickRandomMorganCam(null); 
+    state.morganMoveCooldown=0; 
+    state.morganAtDoor=null;
+    
+    {
+      const ai=(typeof getAILevel==='function')?getAILevel('morgan'):10;
+      const factor=(0.6 + (ai/20));
+      state.morganAggression=(0.55+(state.night-1)*0.1)*factor;
+    }
+    
+    state.jumpscarePending=false; 
+    state.gameOver=false; 
+    state.won=false;
+    state.lastKiller=null;
+    state.morganCamLoc=null;
+    initCamStareTimers();
 
   state.shadowCamLoc=null;
   state.shadowAtDoor=null;
@@ -194,7 +279,13 @@ function resetState(){
   state.shadowDoorScareLimitSeconds=0;
   state.shadowMoveToDoorSeconds=0;
   state.shadowPresenceSeconds=0;
-  state.shadowCooldownSeconds=randInt(10,18);
+  {
+    const ai=(typeof getAILevel==='function')?getAILevel('shadow'):10;
+    const d=ai-10;
+    const min=Math.max(4,Math.round(10 - (d*0.35)));
+    const max=Math.max(min+3,Math.round(18 - (d*0.45)));
+    state.shadowCooldownSeconds=randInt(min,max);
+  }
 
   state.lightLeft=false; state.lightRight=false;
   state.camLightOn=false;
@@ -212,8 +303,11 @@ function resetState(){
   state.twiggSafeCenter=0.5;
   state.twiggSafeWidth=0.22;
   if(twiggInterval){clearInterval(twiggInterval);twiggInterval=null;}
-  scheduleNextTwigg();
+  if(isEnemyEnabled('twigg')) scheduleNextTwigg(); else state.twiggNextAt=0;
   updateTwiggUI();
+
+  // Initialize Dr Hodge
+  if(window.HodgeAI) HodgeAI.reset();
 
   updateUsageDisplay(getRawDrain(),getNightMultiplier());
 
@@ -226,9 +320,19 @@ function resetState(){
   $id('powerout-overlay').classList.remove('show');
   hideMorganOnCam(); clearAlert();
   hideShadowOnCam();
+  const hL=$id('hodge-left');
+  const hR=$id('hodge-right');
+  if(hL) hL.style.display='none';
+  if(hR) hR.style.display='none';
+  const hC=$id('hodge-on-cam');
+  if(hC) hC.style.display='none';
   CAMS.forEach(c=>{const b=document.getElementById(`cambtn-${c}`);if(b)b.className='cam-btn'+(c==='1A'?' active':'');});
   updateCamScene();
   updateCamDanger();
+  console.log('Game state reset successfully');
+  } catch(error){
+    console.error('Error resetting game state:', error);
+  }
 }
 
 function tick(){
@@ -256,7 +360,7 @@ function tick(){
     }
   }
 
-  if(isCamPanelOpen()){
+  if(isCamPanelOpen() && isEnemyEnabled('hamlet')){
     state.hamletCamSeconds=(state.hamletCamSeconds||0)+1;
     state.hamletCamSessionSeconds=(state.hamletCamSessionSeconds||0)+1;
     if(state.hamletCamSeconds>=6){
@@ -276,8 +380,10 @@ function tick(){
   state.power=Math.max(0,state.power-drain);
   updatePowerDisplay();
   updateClock();
-  handleShadowAI();
+  if(isEnemyEnabled('shadow')) handleShadowAI();
+  handleMorganOfficeBehavior();
   handleMorganCameraBehavior();
+  if(isEnemyEnabled('hodge') && window.HodgeAI) HodgeAI.update();
   if(state.timeElapsed/NIGHT_DURATION>=1&&!state.gameOver){winNight();return;}
   if(state.power<=0&&!state.gameOver){powerOut();return;}
 }
@@ -314,15 +420,18 @@ function switchCam(cam){
   setTimeout(()=>{
     const m=$id('morgan-on-cam');
     const s=$id('shadow-on-cam');
+    const h=$id('hodge-on-cam');
     const mOn=!!m && m.style.display!=='none' && m.style.display!=='';
     const sOn=!!s && s.style.display!=='none' && s.style.display!=='';
-    if(!mOn && !sOn) $id('cam-static').className='cam-static';
+    const hOn=!!h && h.style.display!=='none' && h.style.display!=='';
+    if(!mOn && !sOn && !hOn) $id('cam-static').className='cam-static';
   },180);
   $id('cam-feed-label').textContent=`CAM ${cam} — ${CAM_LABELS[cam]||cam}`;
   updateCamLightVisual();
   updateCamScene();
   checkMorganOnCurrentCam();
   checkShadowOnCurrentCam();
+  if(window.HodgeAI) HodgeAI.updateCameraOverlay();
 }
 
 function powerOut(){
@@ -335,6 +444,12 @@ function powerOut(){
 function triggerJumpscare(killer){
   if(state.jumpscarePending||state.won) return;
   state.lastKiller=killer||state.lastKiller||'morgan';
+  if(state.deaths && typeof state.deaths==='object'){
+    const k=String(state.lastKiller||'').toLowerCase();
+    if(typeof state.deaths[k]==='number') state.deaths[k]++;
+    else state.deaths[k]=1;
+    if(typeof saveProgress==='function') saveProgress();
+  }
   AUDIO.scream();
   AUDIO.stopAmbience();
   state.jumpscarePending=true;state.running=false;state.gameOver=true;
@@ -348,11 +463,11 @@ function triggerJumpscare(killer){
     img.classList.remove('shadow');
     img.classList.remove('hamlet');
     img.classList.remove('twigg');
-    img.classList.remove('power');
+    img.classList.remove('hodge');
     if(state.lastKiller==='shadow') img.classList.add('shadow');
     if(state.lastKiller==='hamlet') img.classList.add('hamlet');
     if(state.lastKiller==='twigg') img.classList.add('twigg');
-    if(state.lastKiller==='power') img.classList.add('power');
+    if(state.lastKiller==='hodge') img.classList.add('hodge');
   }
 
   const t=document.getElementById('scare-text');
@@ -368,6 +483,9 @@ function triggerJumpscare(killer){
     } else if(state.lastKiller==='twigg'){
       t.textContent='MISSED IT';
       sub.textContent='mr twigg doesn\'t forgive mistakes';
+    } else if(state.lastKiller==='hodge'){
+      t.textContent='NO ESCAPE';
+      sub.textContent='dr hodge waited at the door for you to slip';
     } else if(state.lastKiller==='power'){
       t.textContent='LIGHTS OUT';
       sub.textContent='with no power, you were never safe';
@@ -399,6 +517,13 @@ function triggerJumpscare(killer){
         'TIP: The safe moment is smaller than it looks. Wait too long and it\'s over.'
       ];
       tip.textContent=tips[Math.floor(Math.random()*tips.length)];
+    } else if(state.lastKiller==='hodge'){
+      const tips=[
+        'TIP: Close the door to make him leave. Keeping it open only buys him time.',
+        'TIP: If you see him creeping closer on cameras, prepare to shut the right door.',
+        'TIP: Don\'t wait for the last second—he punishes hesitation.'
+      ];
+      tip.textContent=tips[Math.floor(Math.random()*tips.length)];
     } else if(state.lastKiller==='power'){
       const tips=[
         'TIP: Power is safety. Waste it, and you\'ll pay for it later.',
@@ -424,11 +549,41 @@ function winNight(){
   state.running=false;state.won=true;state.gameOver=true;
   clearInterval(gameInterval);clearInterval(camTsInterval);
   $id('win-stat').textContent=`NIGHT ${state.night} COMPLETE · POWER: ${Math.round(state.power)}% LEFT`;
+  state.night++;
+  updateNightIndicator();
+  if(typeof saveProgress==='function') saveProgress();
+  if(window.AUDIO && AUDIO.bell) AUDIO.bell();
   setTimeout(()=>showScreen('win-screen'),600);
 }
 
-function nextNight(){state.night++;updateNightIndicator();startGame();}
-function retryNight(){updateNightIndicator();startGame();}
-function goTitle(){clearInterval(gameInterval);clearInterval(camTsInterval);updateNightIndicator();showScreen('title-screen');}
+function nextNight(){
+  try {
+    console.log('Starting next night...');
+    updateNightIndicator();
+    if(state) state.mode='story';
+    startGame();
+  } catch(error){
+    console.error('Error starting next night:', error);
+  }
+}
+function retryNight(){
+  try {
+    console.log('Retrying night...');
+    updateNightIndicator();
+    startGame();
+  } catch(error){
+    console.error('Error retrying night:', error);
+  }
+}
+function goTitle(){
+  try {
+    clearInterval(gameInterval);
+    clearInterval(camTsInterval);
+    updateNightIndicator();
+    showScreen('title-screen');
+  } catch(error){
+    console.error('Error going to title:', error);
+  }
+}
 
 updateNightIndicator();

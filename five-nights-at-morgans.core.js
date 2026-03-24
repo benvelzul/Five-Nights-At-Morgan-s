@@ -16,7 +16,16 @@ const CLOCK_HOURS=[12,1,2,3,4,5];
 const CLOCK_LABELS=['12 AM','1 AM','2 AM','3 AM','4 AM','5 AM'];
 
 function $id(id){
-  return document.getElementById(id);
+  try {
+    if(!id) {
+      console.warn('$id called with no id');
+      return null;
+    }
+    return document.getElementById(id);
+  } catch(error){
+    console.error('Error in $id function:', error);
+    return null;
+  }
 }
 
 function camSvgTemplate(title, scene){
@@ -329,7 +338,10 @@ let state = {
   morganAggression:0.55, jumpscarePending:false, gameOver:false, won:false,
   lastKiller:null,
 
-  aiLevels:{morgan:10,shadow:10,hamlet:10,twigg:10},
+  mode:'story',
+  deaths:{morgan:0,shadow:0,hamlet:0,twigg:0,hodge:0,power:0},
+
+  aiLevels:{morgan:10,shadow:10,hamlet:10,twigg:10,hodge:10},
   morganCamLoc:null,
   morganCamObservedSeconds:0,
   morganCamObserveTargetSeconds:0,
@@ -361,7 +373,42 @@ let state = {
   twiggNeedleDir:1,
   twiggSafeCenter:0.5,
   twiggSafeWidth:0.22,
+
+  hodgeCamLoc:null,
+  hodgePath:null,
+  hodgePathIndex:0,
+  hodgeMoveCooldownSeconds:0,
+  hodgeAtDoor:null,
+  hodgeDoorPresenceSeconds:0,
+  hodgeDoorScareLimitSeconds:0,
 };
+
+function loadProgress(){
+  try{
+    const raw=localStorage.getItem('fnam_progress');
+    if(!raw) return;
+    const data=JSON.parse(raw);
+    if(data && typeof data==='object'){
+      if(typeof data.night==='number') state.night=Math.max(1,Math.round(data.night));
+      if(data.deaths && typeof data.deaths==='object'){
+        Object.keys(state.deaths).forEach(k=>{
+          if(typeof data.deaths[k]==='number') state.deaths[k]=Math.max(0,Math.round(data.deaths[k]));
+        });
+      }
+    }
+  }catch(e){
+  }
+}
+
+function saveProgress(){
+  try{
+    const data={night:state.night,deaths:state.deaths};
+    localStorage.setItem('fnam_progress',JSON.stringify(data));
+  }catch(e){
+  }
+}
+
+loadProgress();
 
 let gameInterval=null, camTsInterval=null, alertTimeout=null;
 
@@ -384,7 +431,7 @@ function getAILevel(name){
 
 function setAILevel(name,value){
   const key=String(name||'').toLowerCase();
-  if(!state.aiLevels) state.aiLevels={morgan:10,shadow:10,hamlet:10,twigg:10};
+  if(!state.aiLevels) state.aiLevels={morgan:10,shadow:10,hamlet:10,twigg:10,hodge:10};
   state.aiLevels[key]=clampAI(value);
   return state.aiLevels[key];
 }
@@ -413,6 +460,37 @@ const AUDIO={
       return false;
     }
   },
+
+  bell(){
+    if(!this.unlocked) return;
+    if(!this.ensure()) return;
+    const t=this.ctx.currentTime;
+    const out=this.ctx.createGain();
+    out.gain.value=0.0;
+    out.connect(this.master);
+
+    const hit=(freq,delay,peak,decay)=>{
+      const o=this.ctx.createOscillator();
+      const g=this.ctx.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(freq,t+delay);
+      g.gain.setValueAtTime(0.0,t+delay);
+      g.gain.linearRampToValueAtTime(peak,t+delay+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+delay+decay);
+      o.connect(g);
+      g.connect(out);
+      o.start(t+delay);
+      o.stop(t+delay+decay+0.05);
+    };
+
+    hit(880,0.00,0.35,0.55);
+    hit(1320,0.00,0.18,0.40);
+    hit(1760,0.01,0.10,0.30);
+
+    out.gain.setValueAtTime(0.0,t);
+    out.gain.linearRampToValueAtTime(1.0,t+0.01);
+    out.gain.exponentialRampToValueAtTime(0.0001,t+0.75);
+  },
   unlock(){
     if(!this.ensure()) return;
     if(this.ctx.state==='suspended') this.ctx.resume();
@@ -420,7 +498,7 @@ const AUDIO={
   },
   startAmbience(){
     if(!this.unlocked) return;
-    if(this.ambience) return;
+    if(!this.ensure()) return;
     const ctx=this.ctx;
     const out=ctx.createGain();
     out.gain.value=0.16;
