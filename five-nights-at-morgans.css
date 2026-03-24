@@ -439,6 +439,14 @@ body {
 .morgan-office.right { right: 78px; }
 .morgan-office.peek { opacity: 1; }
 
+#morgan-left, #morgan-right {
+  background: url('Morgan 1.0.png') center/contain no-repeat;
+}
+
+#hodge-left, #hodge-right {
+  background: url('Hodge 1.0.png') center/contain no-repeat;
+}
+
 .shadow-office {
   position: absolute;
   bottom: 0;
@@ -772,7 +780,7 @@ body {
 @keyframes staticflash { 0%{opacity:0.04} 50%{opacity:0.1} 100%{opacity:0.04} }
 
 .morgan-on-cam { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 4; background: rgba(0,0,0,0.35); }
-.morgan-cam-figure { width: 70px; height: 120px; opacity: 0.9; background: rgba(120,0,0,0.55); border: 2px solid rgba(255,60,60,0.35); box-shadow: 0 0 18px rgba(255,0,0,0.18); filter: contrast(1.2); animation: morganstalk 0.3s ease-in-out infinite alternate; }
+.morgan-cam-figure { width: 70px; height: 120px; opacity: 0.9; background: rgba(120,0,0,0.55) url('Morgan 1.0.png') center/cover no-repeat; border: 2px solid rgba(255,60,60,0.35); box-shadow: 0 0 18px rgba(255,0,0,0.18); filter: contrast(1.2); animation: morganstalk 0.3s ease-in-out infinite alternate; }
 @keyframes morganstalk { from{transform:translateX(-2px)} to{transform:translateX(2px)} }
 
 .shadow-on-cam { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 4; background: rgba(0,0,0,0.32); }
@@ -780,7 +788,7 @@ body {
   width: 86px;
   height: 132px;
   opacity: 0.95;
-  background: radial-gradient(circle at 50% 25%, rgba(40,110,255,0.22) 0%, rgba(10,25,60,0.88) 40%, rgba(0,0,0,0.98) 100%);
+  background: radial-gradient(circle at 50% 25%, rgba(40,110,255,0.22) 0%, rgba(10,25,60,0.88) 40%, rgba(0,0,0,0.98) 100%), url('Twigg 1.0.png') center/cover no-repeat;
   border: 2px solid rgba(80,140,255,0.45);
   box-shadow: 0 0 30px rgba(60,120,255,0.25), 0 0 18px rgba(0,0,0,0.65);
   filter: contrast(1.35) brightness(0.95) saturate(1.35);
@@ -793,7 +801,7 @@ body {
   width: 92px;
   height: 138px;
   opacity: 0.95;
-  background: radial-gradient(circle at 50% 22%, rgba(230,230,230,0.14) 0%, rgba(60,70,80,0.78) 45%, rgba(0,0,0,0.98) 100%);
+  background: radial-gradient(circle at 50% 22%, rgba(230,230,230,0.14) 0%, rgba(60,70,80,0.78) 45%, rgba(0,0,0,0.98) 100%), url('Hodge 1.0.png') center/cover no-repeat;
   border: 2px solid rgba(220,220,220,0.25);
   box-shadow: 0 0 26px rgba(230,230,230,0.10), 0 0 18px rgba(0,0,0,0.7);
   filter: contrast(1.25) brightness(0.92) saturate(0.8);
@@ -848,7 +856,7 @@ body {
 }
 
 .jumpscare-img.hamlet {
-  background: radial-gradient(circle at 50% 35%, rgba(80,255,140,0.28) 0%, rgba(0,60,20,0.80) 35%, rgba(0,0,0,0.98) 75%);
+  background: radial-gradient(circle at 50% 35%, rgba(80,255,140,0.28) 0%, rgba(0,60,20,0.80) 35%, rgba(0,0,0,0.98) 75%), url('Hamlet 1.0.png') center/cover no-repeat;
   border: 3px solid rgba(80,255,140,0.22);
   box-shadow: 0 0 46px rgba(0,255,100,0.18);
   filter: contrast(1.2) saturate(1.15) brightness(0.92);
