@@ -395,11 +395,17 @@ function toggleDoor(side){
     state.doorLeft=!state.doorLeft;
     setDoorVisual('left',state.doorLeft);
     if(state.doorLeft && state.shadowAtDoor==='left') repelShadowFromDoor('left',true);
+    if(state.doorLeft && state.hodgeAtDoor==='left'){
+      showAlert('⚠ DOOR SHUT — DR HODGE BACKED OFF ⚠');
+    }
   }
   else{
     state.doorRight=!state.doorRight;
     setDoorVisual('right',state.doorRight);
     if(state.doorRight && state.shadowAtDoor==='right') repelShadowFromDoor('right',true);
+    if(state.doorRight && state.hodgeAtDoor==='right'){
+      showAlert('⚠ DOOR SHUT — DR HODGE BACKED OFF ⚠');
+    }
   }
   updateShadowOfficeVisual();
   updateUsageDisplay(getRawDrain(),getNightMultiplier());
@@ -431,7 +437,7 @@ function switchCam(cam){
   updateCamScene();
   checkMorganOnCurrentCam();
   checkShadowOnCurrentCam();
-  if(window.HodgeAI) HodgeAI.updateCameraOverlay();
+  if(window.HodgeAI && typeof window.HodgeAI.updateCameraOverlay==='function') window.HodgeAI.updateCameraOverlay();
 }
 
 function powerOut(){
