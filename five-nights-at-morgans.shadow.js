@@ -100,6 +100,7 @@ function checkShadowOnCurrentCam(){
 }
 
 function showShadowOnCam(){
+  if(!state.camLightOn) return;
   const el=$id('shadow-on-cam');
   if(el) el.style.display='flex';
   $id('cam-static').className='cam-static on';

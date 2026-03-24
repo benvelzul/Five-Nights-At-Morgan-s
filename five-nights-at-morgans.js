@@ -531,21 +531,21 @@ const AUDIO={
     const o=ctx.createOscillator();
     o.type='sawtooth';
     o.frequency.setValueAtTime(320,t);
-    o.frequency.exponentialRampToValueAtTime(960,t+0.18);
-    o.frequency.exponentialRampToValueAtTime(180,t+0.65);
+    o.frequency.exponentialRampToValueAtTime(960,t+0.12);
+    o.frequency.exponentialRampToValueAtTime(180,t+0.40);
     const f=ctx.createBiquadFilter();
     f.type='bandpass';
     f.frequency.setValueAtTime(1100,t);
     f.Q.value=0.9;
     const g=ctx.createGain();
     g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(0.75,t+0.03);
-    g.gain.exponentialRampToValueAtTime(0.08,t+0.7);
+    g.gain.exponentialRampToValueAtTime(1.2,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.12,t+0.45);
     o.connect(f);
     f.connect(g);
     g.connect(this.master);
     o.start(t);
-    o.stop(t+0.78);
+    o.stop(t+0.50);
     this.noiseBurst(0.55,0.25,600);
   }
 };
@@ -933,6 +933,7 @@ function checkShadowOnCurrentCam(){
 }
 
 function showShadowOnCam(){
+  if(!state.camLightOn) return;
   const el=document.getElementById('shadow-on-cam');
   if(el) el.style.display='flex';
   document.getElementById('cam-static').className='cam-static on';
@@ -996,6 +997,7 @@ function checkMorganOnCurrentCam(){
 }
 
 function showMorganOnCam(){
+  if(!state.camLightOn) return;
   document.getElementById('morgan-on-cam').style.display='flex';
   document.getElementById('cam-static').className='cam-static on';
 }

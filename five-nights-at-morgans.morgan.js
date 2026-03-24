@@ -189,6 +189,7 @@ function checkMorganOnCurrentCam(){
 }
 
 function showMorganOnCam(){
+  if(!state.camLightOn) return;
   $id('morgan-on-cam').style.display='flex';
   $id('cam-static').className='cam-static on';
 }

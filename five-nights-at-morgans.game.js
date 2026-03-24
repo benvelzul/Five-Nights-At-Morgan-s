@@ -458,6 +458,12 @@ function triggerJumpscare(killer){
   }
   AUDIO.scream();
   AUDIO.stopAmbience();
+  
+  // Play scream.mp3
+  const screamAudio = new Audio('scream.mp3');
+  screamAudio.volume = 0.8;
+  screamAudio.play().catch(err => console.log('Scream audio play error:', err));
+  
   state.jumpscarePending=true;state.running=false;state.gameOver=true;
   clearInterval(gameInterval);clearInterval(camTsInterval);
   if(twiggInterval){clearInterval(twiggInterval);twiggInterval=null;}
@@ -470,10 +476,13 @@ function triggerJumpscare(killer){
     img.classList.remove('hamlet');
     img.classList.remove('twigg');
     img.classList.remove('hodge');
+    img.classList.remove('zoom-scare');
     if(state.lastKiller==='shadow') img.classList.add('shadow');
     if(state.lastKiller==='hamlet') img.classList.add('hamlet');
     if(state.lastKiller==='twigg') img.classList.add('twigg');
     if(state.lastKiller==='hodge') img.classList.add('hodge');
+    // Trigger zoom animation
+    img.classList.add('zoom-scare');
   }
 
   const t=document.getElementById('scare-text');

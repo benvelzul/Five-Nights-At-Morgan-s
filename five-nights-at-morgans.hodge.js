@@ -8,6 +8,7 @@ function hideHodgeOnCam(){
 }
 
 function showHodgeOnCam(){
+  if(!state.camLightOn) return;
   const el=$id('hodge-on-cam');
   if(el) el.style.display='flex';
   $id('cam-static').className='cam-static on';
