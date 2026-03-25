@@ -69,6 +69,7 @@ function camSvgTemplate(title, scene){
 
 const CAM_SCENES = {
   '1A': () => camSvgTemplate('HALLWAY A', `
+    <image href="Images/Cam 1.png" x="10" y="20" width="220" height="82" preserveAspectRatio="xMidYMid slice" opacity="0.6"/>
     <rect x="10" y="20" width="220" height="82" fill="#030707" stroke="#081408" stroke-width="1" opacity="0.75"/>
 
     <g opacity="0.95">
@@ -97,6 +98,7 @@ const CAM_SCENES = {
     </g>
   `),
   '1B': () => camSvgTemplate('HALLWAY B', `
+    <image href="Images/Cam 2.png" x="10" y="20" width="220" height="82" preserveAspectRatio="xMidYMid slice" opacity="0.6"/>
     <rect x="10" y="20" width="220" height="82" fill="#030707" stroke="#081408" stroke-width="1" opacity="0.7"/>
 
     <rect x="16" y="28" width="118" height="34" fill="#001800" opacity="0.22" stroke="#0a1a0a" stroke-width="1"/>
@@ -121,6 +123,7 @@ const CAM_SCENES = {
     </g>
   `),
   '2A': () => camSvgTemplate('CLASSROOM 2A', `
+    <image href="Images/Cam 3.png" x="10" y="20" width="220" height="82" preserveAspectRatio="xMidYMid slice" opacity="0.6"/>
     <rect x="10" y="20" width="220" height="82" fill="#030707" stroke="#081408" stroke-width="1" opacity="0.7"/>
     <rect x="16" y="26" width="124" height="30" fill="#001800" opacity="0.40" stroke="#0a1a0a" stroke-width="1"/>
     <text x="78" y="45" font-size="8" fill="#006600" font-family="monospace" text-anchor="middle" opacity="0.85">WHITEBOARD</text>
@@ -145,6 +148,7 @@ const CAM_SCENES = {
     </g>
   `),
   '3A': () => camSvgTemplate('CAFETERIA', `
+    <image href="Images/Cam 4.png" x="10" y="20" width="220" height="82" preserveAspectRatio="xMidYMid slice" opacity="0.6"/>
     <rect x="10" y="20" width="220" height="82" fill="#030707" stroke="#081408" stroke-width="1" opacity="0.65"/>
 
     <rect x="14" y="26" width="150" height="18" fill="#001800" opacity="0.18" stroke="#0a1a0a" stroke-width="1"/>
@@ -176,6 +180,7 @@ const CAM_SCENES = {
     </g>
   `),
   '4A': () => camSvgTemplate('LIBRARY', `
+    <image href="Images/Cam 5.png" x="10" y="20" width="220" height="82" preserveAspectRatio="xMidYMid slice" opacity="0.6"/>
     <rect x="10" y="20" width="220" height="82" fill="#030707" stroke="#081408" stroke-width="1" opacity="0.65"/>
 
     <g opacity="0.92">
@@ -201,6 +206,7 @@ const CAM_SCENES = {
     </g>
   `),
   '5A': () => camSvgTemplate('MAIN ENTRANCE', `
+    <image href="Images/Cam 6.png" x="10" y="20" width="220" height="82" preserveAspectRatio="xMidYMid slice" opacity="0.6"/>
     <rect x="10" y="20" width="220" height="82" fill="#030707" stroke="#081408" stroke-width="1" opacity="0.65"/>
 
     <g opacity="0.92">
@@ -227,6 +233,7 @@ const CAM_SCENES = {
     </g>
   `),
   '6A': () => camSvgTemplate('LEFT DOOR', `
+    <image href="Images/Cam 7.png" x="10" y="18" width="220" height="90" preserveAspectRatio="xMidYMid slice" opacity="0.6"/>
     <rect x="10" y="18" width="220" height="90" fill="#030606" stroke="#081408" stroke-width="1" opacity="0.75"/>
 
     <rect x="14" y="22" width="124" height="78" fill="#020404" opacity="0.95"/>
@@ -289,6 +296,7 @@ const CAM_SCENES = {
     </g>
   `),
   '7A': () => camSvgTemplate('RIGHT DOOR', `
+    <image href="Images/Cam 8.png" x="10" y="18" width="220" height="90" preserveAspectRatio="xMidYMid slice" opacity="0.6"/>
     <rect x="10" y="18" width="220" height="90" fill="#030606" stroke="#081408" stroke-width="1" opacity="0.75"/>
 
     <rect x="14" y="22" width="88" height="78" fill="#010101" opacity="0.98"/>
